@@ -1,0 +1,87 @@
+#!/usr/bin/python
+
+import os
+virtenv = os.environ['APPDIR'] + '/virtenv/'
+os.environ['PYTHON_EGG_CACHE'] = os.path.join(virtenv, 'lib/python2.6/site-packages')
+virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
+try:
+    execfile(virtualenv, dict(__file__=virtualenv))
+except IOError:
+    pass
+#
+# IMPORTANT: Put any additional includes below this line.  If placed above this
+# line, it's possible required libraries won't be in your searchable path
+# 
+import json
+import re
+from pycurl import Curl
+from pycurl import URL
+from pycurl import WRITEFUNCTION
+from StringIO import StringIO
+from PyRSS2Gen import RSS2
+from PyRSS2Gen import RSSItem
+from PyRSS2Gen import Guid
+from datetime import datetime
+
+def application(environ, start_response):
+
+	if environ['PATH_INFO'] == '/':
+		    #
+    		# Fetching repository list
+    		#
+    		github_response = StringIO()
+    		github = Curl()
+    		github.setopt(URL, "https://api.github.com/orgs/openshift/repos")
+    		github.setopt(WRITEFUNCTION, github_response.write)
+    		github.perform()
+    		#
+    		# Jsoning
+    		#
+    		openshift_repositories = json.loads(github_response.getvalue())
+    		#
+    		# Filtering items
+    		#
+    		rss_items = list()
+    		for repo in openshift_repositories:
+        		if re.search(r'(demo|quickstart|example)$', repo['name']):
+					rss_items.append(RSSItem(
+                		title = repo['name'],
+                		link = repo['html_url'],
+                		guid = Guid(repo['git_url']),
+                		description = repo['description'],
+                		pubDate = datetime.strptime(repo['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+            		))
+			#
+			# Generating the feed
+			#
+			rss = RSS2(
+				title = "Red Hat OpenShift Sample Applications",
+				link = "https://github.com/openshift",
+				description = "Sample applications for Red Hat's PaaS solution OpenShift",
+				lastBuildDate = datetime.now(),
+				items = rss_items
+			)
+			output = StringIO()
+			rss.write_xml(output)
+
+			status = '200 OK'
+			ctype = 'application/xml'
+			response_body = output.getvalue()
+	else:
+		ctype = 'text/plain'
+		status = '404 Not Found'
+		response_body = 'Not Found'
+
+	response_headers = [('Content-Type', ctype), ('Content-Length', str(len(response_body)))]
+	#
+	start_response(status, response_headers)
+	return [response_body]
+
+#
+# Below for testing only
+#
+if __name__ == '__main__':
+	from wsgiref.simple_server import make_server
+	httpd = make_server('localhost', 8051, application)
+	# Wait for a single request, serve it and quit.
+	httpd.handle_request()
