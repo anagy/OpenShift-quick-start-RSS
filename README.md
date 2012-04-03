@@ -1,9 +1,9 @@
 RSS feed for OpenShift quick-start applications
 ================================================
 
-This simple application helps you to quickly setup an application which will 
-generate an RSS feed about Red Hat OpenShift quick-start application pushed to
-GitHub.
+This repository helps you to quickly setup an OpenShift application which will 
+generate an RSS feed about Red Hat OpenShift quick-start application pushed 
+to GitHub.
 
 Hosting the application on OpenShift
 -------------------------------------
