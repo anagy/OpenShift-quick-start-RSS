@@ -16,8 +16,8 @@ Create a Python 2.6 application
 
 Add this repository as upstream
 
-	cd rhcquickstartrss
-	git remote add upstream -m master git@github.com:anagy/openshift-example-rss.git
+	cd osquickstartrss
+	git remote add upstream -m master git@github.com:anagy/OpenShift-quick-start-RSS.git
 	git pull -s recursive -X theirs upstream master
 	git push
 
