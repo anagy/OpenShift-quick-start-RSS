@@ -41,9 +41,10 @@ def application(environ, start_response):
     		#
     		# Filtering items
     		#
+    		regex = re.compile(r'(demo|quickstart|example|openshifted)', re.IGNORECASE)
     		rss_items = list()
     		for repo in openshift_repositories:
-        		if re.search(r'(demo|quickstart|example)$', repo['name']):
+        		if regex.search(repo['name']) or regex.search(repo['description']):
 					rss_items.append(RSSItem(
                 		title = repo['name'],
                 		link = repo['html_url'],
