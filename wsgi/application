@@ -31,7 +31,7 @@ def application(environ, start_response):
     		#
     		github_response = StringIO()
     		github = Curl()
-    		github.setopt(URL, "https://api.github.com/orgs/openshift/repos")
+    		github.setopt(URL, "https://api.github.com/orgs/openshift/repos?per_page=10000")
     		github.setopt(WRITEFUNCTION, github_response.write)
     		github.perform()
     		#
